@@ -59,10 +59,12 @@ public class EventScript : MonoBehaviour
         if (event_Bool == false)
             return;
 
-        GlobalScript.g_HealthNow += GlobalScript.g_HealthMax / 5;
+        GlobalScript.g_HealthNow = GlobalScript.g_HealthMax;
 
-        if (GlobalScript.g_HealthNow >= GlobalScript.g_HealthMax)
-            GlobalScript.g_HealthNow = GlobalScript.g_HealthMax;
+        //GlobalScript.g_HealthNow += GlobalScript.g_HealthMax / 5;
+
+        //if (GlobalScript.g_HealthNow >= GlobalScript.g_HealthMax)
+        //    GlobalScript.g_HealthNow = GlobalScript.g_HealthMax;
 
         HeroScript.Inst.HpImgCheck(GlobalScript.g_HealthNow, GlobalScript.g_HealthMax);
 

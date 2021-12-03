@@ -34,8 +34,6 @@ public class HeroScript : CharacScript
         def_Point = GlobalScript.g_DefState;
         max_Hp = GlobalScript.g_HealthMax;
         now_Hp = GlobalScript.g_HealthNow;
-        max_Hp = GlobalScript.g_HealthMax;
-        now_Hp = GlobalScript.g_HealthNow;
         att_Up = 1.0f;
         def_Up = 1.0f;
         att_Down = 0.0f;
@@ -251,6 +249,8 @@ public class HeroScript : CharacScript
         if (now_Hp <= 0)
             now_Hp = 0;
 
+        GlobalScript.g_HealthNow = now_Hp;
+
         DefenceReset();
 
         anim.Play(anim_Clip[(int)EnemyClip.Damage].name, -1, 0.0f);
@@ -294,6 +294,7 @@ public class HeroScript : CharacScript
     public void DeathEnd()
     {
         StageScript.Inst.dead_Obj.SetActive(true);
+        SoundScript.Inst.SoundControl("GameOver");
         Destroy(this.gameObject);
     }
 

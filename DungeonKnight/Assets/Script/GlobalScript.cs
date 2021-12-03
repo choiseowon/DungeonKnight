@@ -16,8 +16,8 @@ public class GlobalScript
     public static int g_AttPuls = 0;
     public static int g_DefState = 10;
     public static int g_DefPuls = 0;
-    public static int g_HealthMax = 200;
-    public static int g_HealthNow = g_HealthMax;
+    public static float g_HealthMax = 200;
+    public static float g_HealthNow = g_HealthMax;
     public static int g_ManaMax = 3;
     public static int g_Gold = 500;
 
@@ -52,7 +52,9 @@ public class GlobalScript
         g_Height = Screen.height;
 
         g_AttState = 30;
+        g_AttPuls = 0;
         g_DefState = 10;
+        g_DefPuls = 0;
         g_HealthMax = 200;
         g_HealthNow = g_HealthMax;
         g_ManaMax = 3;
@@ -63,6 +65,8 @@ public class GlobalScript
         g_ShopArmor = 100;
         g_MapBool = false;
         g_SelecCanvas = null;
+
+        g_EnemyLev = 1;
         #endregion
 
         // 메인화면으로 돌아가면 호출되는 함수 카드 리스트를 초기화함
