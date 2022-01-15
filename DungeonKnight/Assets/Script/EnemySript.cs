@@ -365,15 +365,9 @@ public class EnemySript : CharacScript
             if(enemyType == EnemyType.B_Monster)
                 for (int ii = 0; ii < summon_Obj.Length; ii++)
                 {
-                    if (summon_Obj[ii] != null)
-                    {
-                        Debug.Log("AA");
-                        summon_Obj[ii].GetComponent<EnemySript>().DamageCall(100);
-                        SoundScript.Inst.SoundControl("Death");
-                    }
-
+                    summon_Obj[ii].GetComponent<EnemySript>().DamageCall(100);
+                    SoundScript.Inst.SoundControl("Death");
                 }
-
                     
         }
         else
@@ -389,17 +383,10 @@ public class EnemySript : CharacScript
     {
         if(StageScript.Inst.enemy_List.Count <= 0)
         {
-            if (StageScript.Inst.stageType == StageType.Boss)
-            {
-                if(enemyType == EnemyType.B_Monster)
-                    StageScript.Inst.RewardCall();
-            }
-            else
-            {
-                StageScript.Inst.RewardCall();
-            }
-                
+            if (StageScript.Inst.stageType == StageType.Boss && enemyType != EnemyType.B_Monster)
+                return;
 
+            StageScript.Inst.RewardCall();
         }
 
         HeroScript.Inst.patt_Bool = true;
