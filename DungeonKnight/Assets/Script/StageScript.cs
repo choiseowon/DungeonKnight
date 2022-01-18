@@ -262,39 +262,39 @@ public class StageScript : MonoBehaviour
 
     public void EnemyPattCall()
     {
-        if(turnState == TurnState.HeroTurn)
+        if(turnState == TurnState.HeroTurn)     // 현재 플레이어의 턴일 경우
         {
-            turnState = TurnState.EnemyTurn;
+            turnState = TurnState.EnemyTurn;    // 몬스터의 턴으로 변경
 
             for (int ii = 0; ii < enemy_List.Count; ii++)
-                enemy_List[ii].patt_Bool = true;
+                enemy_List[ii].patt_Bool = true;    // 모든 몬스터의 패턴을 진행하도록 조건 변경
         }
 
-        if (pattCount >= enemy_List.Count)
+        if (pattCount >= enemy_List.Count)      // 패턴을 진행한 몬스터의 수가 존재하는 몬스터의 수와 같다면
         {
-            pattCount = 0;
-            turnState = TurnState.HeroTurn;
-            HeroScript.Inst.HeroTurnStart();
+            pattCount = 0;      // 패턴을 진행한 몬스터의 수 초기화
+            turnState = TurnState.HeroTurn;     // 플레이어 턴으로 변경
+            HeroScript.Inst.HeroTurnStart();    // 플레이터 턴 설정 함수 호출
 
-            if (HeroScript.Inst.die_Bool == true)
+            if (HeroScript.Inst.die_Bool == true)       // 플레이어가 죽었는지 체크
                 return;
 
-            ManaSetting(0, true);
+            ManaSetting(0, true);       // 카드 사용을 위한 마나 초기화
 
             for (int ii = 0; ii < enemy_List.Count; ii++)
-                enemy_List[ii].patt_Obj.SetActive(true);
+                enemy_List[ii].patt_Obj.SetActive(true);        // 몬스터 패턴 표시 오브젝트를 활성화
 
-            CardCtrlScript.Inst.CardDraw(0, true, turn_Btn.gameObject);
+            CardCtrlScript.Inst.CardDraw(0, true, turn_Btn.gameObject);     // 카드를 드로우
 
             return;
         }
 
-        for (int ii = 0; ii < enemy_List.Count; ii++)
+        for (int ii = 0; ii < enemy_List.Count; ii++)       // 존재하는 몬스터 만큼 반복
         {
-            if(enemy_List[ii].patt_Bool == true)
+            if(enemy_List[ii].patt_Bool == true)        // 몬스터가 패턴을 실행했는지 체크
             {
-                enemy_List[ii].PatternCall();
-                pattCount++;
+                enemy_List[ii].PatternCall();   // 몬스터의 패턴 호출
+                pattCount++;        // 패턴 진행된 몬스터 수 증가
 
                 break;
             }

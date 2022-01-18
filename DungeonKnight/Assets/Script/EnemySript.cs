@@ -25,13 +25,11 @@ public class EnemySript : CharacScript
 
     [Header("Enemy Type")]
     public EnemyType enemyType = EnemyType.Count;
-    //List<EnemyPatt> patt_List = new List<EnemyPatt>();
     EnemyPatt patt_Now = EnemyPatt.Count;
 
     void Start()
     {
-        //enemyType = EnemyType.N_Ghost;
-        EnemyPatten(enemyType);
+        EnemyPatten(enemyType);     // 몬스터 타입이 따른 능력치 및 패턴 설정
 
         if (target_Btn != null)
         {
@@ -46,24 +44,20 @@ public class EnemySript : CharacScript
             });
         }
 
-        now_Hp = max_Hp;
+        now_Hp = max_Hp;        // 현재 체력과 최대 체력이 동일하도록 설정
 
         if (hp_Img != null)
-            hp_Img.fillAmount = now_Hp / max_Hp;
+            hp_Img.fillAmount = now_Hp / max_Hp;        // 체력 이미지를 해당 비율에 맞게 설정
 
         if (hp_Text != null)
-            hp_Text.text = (int)now_Hp + " / " + (int)max_Hp;
+            hp_Text.text = (int)now_Hp + " / " + (int)max_Hp;       // 체력 텍스트 표기
 
-        PattObjSetting();
+        PattObjSetting();       // 패턴 표시용 오브젝트 생성
     }
 
-    void Update()
+    public void PatternCall()       // 패턴 호출 함수
     {
-    }
-
-    public void PatternCall()
-    {
-        if (HeroScript.Inst == null)
+        if (HeroScript.Inst == null)        // HeroScript가 존재하는 경우에만 함수 실행
             return;
 
         def_Save = 0;               // 남아있던 방어막을 0으로 만든
@@ -71,23 +65,23 @@ public class EnemySript : CharacScript
         patt_Obj.SetActive(false);  // 패턴 표시 끄기
 
         // patt_Now의 값에 따라 다른 함수 호출
-        if(patt_Now == EnemyPatt.Attack || patt_Now == EnemyPatt.MultiAtt || patt_Now == EnemyPatt.AttDrain)
+        if(patt_Now == EnemyPatt.Attack || patt_Now == EnemyPatt.MultiAtt || patt_Now == EnemyPatt.AttDrain)    // 공격 종류의 패턴
         {
             AttackCall();
         }
-        else if(patt_Now == EnemyPatt.Defence)
+        else if(patt_Now == EnemyPatt.Defence)  // 방어 패턴
         {
             DefenceCall();
         }
-        else if(patt_Now == EnemyPatt.AttUp || patt_Now == EnemyPatt.ADUp || patt_Now == EnemyPatt.Perfect)
+        else if(patt_Now == EnemyPatt.AttUp || patt_Now == EnemyPatt.ADUp || patt_Now == EnemyPatt.Perfect)     // 버프형 패턴
         {
             BuffCall();
         }
-        else if(patt_Now == EnemyPatt.AttDown || patt_Now == EnemyPatt.DefDown)
+        else if(patt_Now == EnemyPatt.AttDown || patt_Now == EnemyPatt.DefDown)     // 디버프형 패턴
         {
             DeBuffCall();
         }
-        else if(patt_Now == EnemyPatt.Summon)
+        else if(patt_Now == EnemyPatt.Summon)       // 소환 패턴
         {
             SummonCall();
         }
@@ -95,157 +89,153 @@ public class EnemySript : CharacScript
 
     #region ---------- Attack Funcs
 
-    public void AttackCall()
+    public void AttackCall()        // 공격 애니메이션 호출
     {
-        // 패턴 종류에 따른 애니메이션 호출
-        if (patt_Now != EnemyPatt.AttDrain)
+        if (patt_Now != EnemyPatt.AttDrain)     // 공격이 일반 공격인지 흡혈 공격인지 체크
             anim.SetTrigger("Attack");
         else
             anim.SetTrigger("Drain");
 
-        SoundScript.Inst.SoundControl("Attack");
+        SoundScript.Inst.SoundControl("Attack");        // 사운드 재생
     }
 
-    public void AttackFunc()
+    public void AttackFunc()        // 모든 공격 애니메이션 중간에 이벤트로 호출 될 함수
     {
-        // 패턴에 따른 대미지 값을 정한 후 대미지 호출
-        switch(patt_Now)
+        switch(patt_Now)        // 패턴 종류 구분
         {
-            case EnemyPatt.Attack:
+            case EnemyPatt.Attack:      // 일반 공격일 경우
                 {
-                    float att_Damage = att_Point * att_Up;
-                    HeroScript.Inst.DamageCall(Mathf.Floor(att_Damage), this);
+                    float att_Damage = att_Point * att_Up;      // 최종 대미지는 공격력과 버프를 계산하여 수치를 설정
+                    HeroScript.Inst.DamageCall(Mathf.Floor(att_Damage), this);      // 주인공 캐릭터의 대미지 함수 호출 매개변수로 최종 대미지(소수점 내림)와 공격한 유닛 정보를 넘겨줌
                 }
                 break;
-            case EnemyPatt.MultiAtt:
+            case EnemyPatt.MultiAtt:    // 멀티 공격일 경우
                 {
-                    float att_Damage = (att_Point * 0.5f) * att_Up;
+                    float att_Damage = (att_Point * 0.5f) * att_Up;      // 최종 대미지는 공격력의 일부와 버프를 계산하여 수치를 설정
                     HeroScript.Inst.multi_Count = 3;
-                    HeroScript.Inst.DamageCall(Mathf.Floor(att_Damage), this);
+                    HeroScript.Inst.DamageCall(Mathf.Floor(att_Damage), this);      // 주인공 캐릭터의 대미지 함수 호출 매개변수로 최종 대미지(소수점 내림)와 공격한 유닛 정보를 넘겨줌
                 }
                 break;
-            case EnemyPatt.AttDrain:
+            case EnemyPatt.AttDrain:    // 흡혈 공격일 경우
                 {
-                    float att_Damage = att_Point * att_Up;
-                    HeroScript.Inst.DamageCall(Mathf.Floor(att_Damage), this);
+                    float att_Damage = att_Point * att_Up;      // 최종 대미지는 공격력과 버프를 계산하여 수치를 설정
+                    HeroScript.Inst.DamageCall(Mathf.Floor(att_Damage), this);      // 주인공 캐릭터의 대미지 함수 호출 매개변수로 최종 대미지(소수점 내림)와 공격한 유닛 정보를 넘겨줌
                 }
                 break;
         }
     }
 
-    public void DrainHP()
+    public void DrainHP()       // 흡혈 공격 애니메이션 중간에 이벤트로 호출 될 함수
     {
-        now_Hp += drain_Point;
+        now_Hp += drain_Point;      // 현재 체력에 주인공 캐릭터가 받은 피해만큼을 추가
 
-        if (now_Hp >= max_Hp)
+        if (now_Hp >= max_Hp)       // 추가된 현재 체력이 최대 체력 보다 높으면 최대 체력으로 설정
             now_Hp = max_Hp;
 
         if (hp_Img != null)
-            hp_Img.fillAmount = now_Hp / max_Hp;
+            hp_Img.fillAmount = now_Hp / max_Hp;        // 체력 이미지를 해당 비율에 맞게 설정
 
         if (hp_Text != null)
-            hp_Text.text = (int)now_Hp + " / " + (int)max_Hp;
+            hp_Text.text = (int)now_Hp + " / " + (int)max_Hp;       // 체력 텍스트 표기
 
-        // 이펙트 오브젝트를 생성하여 이펙트 효과
-        GameObject eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);
-        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);
-        eff.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-        string m_Str = "- " + Mathf.Floor(drain_Point).ToString();
-        eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(0, 255, 0, 255), Color.white);
+        GameObject eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);     // 이펙트 오브젝트 생성
+        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);       // 이벤트 오브젝트를 모아두기 위한 부모 오브젝트 설정
+        eff.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);       // 크기 조정
+        string m_Str = "- " + Mathf.Floor(drain_Point).ToString();      // 흡혈된 수치를 표기하기 위한 텍스트
+        eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(0, 255, 0, 255), Color.white);      // 이펙트를 텍스트로 설정. 매개변수로 문자열과 기본색상, 테두리 색상 값을 넘겨줌
 
-        eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);
-        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);
-        eff.transform.localScale = new Vector3(1.3f, 1.3f, 1.3f);
-        eff.GetComponent<EffectScript>().EffectSetting(EffectType.Potion, this.gameObject);
-        SoundScript.Inst.SoundControl("Potion");
+        eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);     // 이펙트 오브젝트 생성
+        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);       // 이벤트 오브젝트를 모아두기 위한 부모 오브젝트 설정
+        eff.transform.localScale = new Vector3(1.3f, 1.3f, 1.3f);       // 크기 조정
+        eff.GetComponent<EffectScript>().EffectSetting(EffectType.Potion, this.gameObject);     // 매개변수로 넘겨준 타입의 이펙트를 해당 오브젝트 위치에 생성
+        SoundScript.Inst.SoundControl("Potion");        // 사운드 재생
 
     }
 
-    // 패턴이 끝나면 호출되는 함수
-    public void AttackEnd()
+    public void AttackEnd()        // 모든 공격 애니메이션 끝에 이벤트로 호출 될 함수
     {
-        EnemyPattEnd();
+        EnemyPattEnd();     // 몬스터의 패턴 종료 함수 호출
     }
     #endregion
 
     #region ---------- Defence Funcs
 
-    public void DefenceCall()
+    public void DefenceCall()       // 방어 애니메이션 호출 함수
     {
-        GameObject eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);
-        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);
-        eff.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-        eff.GetComponent<EffectScript>().EffectSetting(EffectType.Defence, this.gameObject);
-        def_Save += (int)(def_Point * def_Up);
-        SoundScript.Inst.SoundControl("Defence");
+        GameObject eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);     // 이펙트 오브젝트 생성
+        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);       // 이벤트 오브젝트를 모아두기 위한 부모 오브젝트 설정
+        eff.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);       // 크기 조정
+        eff.GetComponent<EffectScript>().EffectSetting(EffectType.Defence, this.gameObject);     // 매개변수로 넘겨준 타입의 이펙트를 해당 오브젝트 위치에 생성
+        def_Save += (int)(def_Point * def_Up);      // 저장될 방어력 수치 설정 방어력과 버프량을 계산하여 설정
+        SoundScript.Inst.SoundControl("Defence");   // 사운드 재생
     }
 
     #endregion
 
     #region ---------- Damage Funcs
-    public void DamageCall(float a_Damage)
+    public void DamageCall(float a_Damage)      // 대미지를 받을 경우 호출되는 함수
     {
-        if (per_Bool == true)
+        if (per_Bool == true)       // 무적버프가 있다면 피해를 0으로 만듬
             a_Damage = 0;
 
         float m_Damage = a_Damage;
-        multi_Damage = a_Damage;
+        multi_Damage = a_Damage;        // 멀티 대미지를 위한 대미지 값 저장
 
-        if (def_Save > 0)
+        if (def_Save > 0)       // 저장된 방어력이 있다면
         {
-            m_Damage = a_Damage - def_Save;
-            def_Save -= a_Damage;
+            m_Damage = a_Damage - def_Save;     // 피해량을 저장된 방어력 만큼 감소
+            def_Save -= a_Damage;       // 저장된 방어력 감소
 
-            if (m_Damage <= 0)
-                m_Damage = 0;
+            if (m_Damage <= 0)      // 저장된 방어력이 피해량보다 높아서 피해량이 0 이하가 된다면
+                m_Damage = 0;       // 피해량 0 으로 설정
 
 
-            DefenceReset();
+            DefenceReset();     // 방어력 표시 초기화
         }
 
-        GameObject eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);
-        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);
-        eff.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+        GameObject eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);     // 이펙트 오브젝트 생성
+        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);       // 이벤트 오브젝트를 모아두기 위한 부모 오브젝트 설정
+        eff.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);       // 크기 조정
 
-        if (m_Damage > 0)
+        if (m_Damage > 0)       // 피해량이 0 보다 크다면
         {
-            string m_Str = "- " + Mathf.Floor(m_Damage).ToString();
-            eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(255, 50, 50, 255), Color.white);
-            SoundScript.Inst.SoundControl("Damage");
+            string m_Str = "- " + Mathf.Floor(m_Damage).ToString();     // 피해량(내림)을 문자열로 저장
+            eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(255, 50, 50, 255), Color.white);      // 이펙트를 텍스트로 설정. 매개변수로 문자열과 기본색상, 테두리 색상 값을 넘겨줌
+            SoundScript.Inst.SoundControl("Damage");        // 사운드 재생
         }
         else
         {
-            string m_Str = "방어함";
-            eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(255, 255, 255, 255), Color.black);
-            SoundScript.Inst.SoundControl("Guard");
+            string m_Str = "방어함";       // 피해량이 0 이면 해당 문자열 저장
+            eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(255, 255, 255, 255), Color.black);      // 이펙트를 텍스트로 설정. 매개변수로 문자열과 기본색상, 테두리 색상 값을 넘겨줌
+            SoundScript.Inst.SoundControl("Guard");     // 사운드 재생
         }
 
-        now_Hp -= m_Damage;
-        if (now_Hp <= 0)
-            now_Hp = 0;
+        now_Hp -= m_Damage;     // 대미지 수치 만큼 현재 체력 감소
+        if (now_Hp <= 0)        // 현재 체력이 0보다 작거나 같을 경우
+            now_Hp = 0;         // 0으로 설정
 
-        anim.Play(anim_Clip[(int)EnemyClip.Damage].name, -1, 0.0f);
+        anim.Play(anim_Clip[(int)EnemyClip.Damage].name, -1, 0.0f);     // 대미지 애니메이션을 처음부터 재생(멀티 공격을 받으면 여러번 피격되는 효과를 위해 애니메이션 초기화가 필요)
 
         if (hp_Img != null)
-            hp_Img.fillAmount = now_Hp / max_Hp;
+            hp_Img.fillAmount = now_Hp / max_Hp;        // 체력 이미지를 해당 비율에 맞게 설정
 
         if (hp_Text != null)
-            hp_Text.text = (int)now_Hp + " / " + (int)max_Hp;
+            hp_Text.text = (int)now_Hp + " / " + (int)max_Hp;       // 체력 텍스트 표기
 
     }
 
-    public void MultiCheck()
+    public void MultiCheck()        // 멀티 공격이 있을 경우 피격 애니메이션 중간에 호출
     {
-        if (multi_Count > 1)
+        if (multi_Count > 1)    // 멀티 카운트가 남아 있는지 체크
         {
-            multi_Count--;
-            DamageCall(multi_Damage);
+            multi_Count--;      // 횟수 감소
+            DamageCall(multi_Damage);       // 대미지 호출 함수
         }
     }
 
-    public void DamageEnd()
+    public void DamageEnd()     // 피격 애니메이션 끝에 호출
     {
-        if (now_Hp <= 0.0f)
+        if (now_Hp <= 0.0f)     // 현제 체력이 0 이거나 그보다 작을 경우
         {
             StageScript.Inst.enemy_List.Remove(this);
             anim.SetTrigger("Death");
@@ -556,7 +546,7 @@ public class EnemySript : CharacScript
 
     #endregion
 
-    void EnemyPattEnd()
+    void EnemyPattEnd()     // 패턴이 끝났을 때 호출되는 함수
     {
         patt_Bool = false;                  // 패턴이 진행 중이 아님을 체크하는 변수
         BuffCount(patt_Now);                // 적용중인 버프의 카운트 감소
@@ -564,7 +554,7 @@ public class EnemySript : CharacScript
         PattObjSetting();                   // 새로운 패턴 설정
     }
 
-    void PattObjSetting()
+    void PattObjSetting()       // 패턴 설정을 위한 함수
     {
         int rand = Random.Range(0, e_Patten.Count);    // 몬스터가 가지고 있는 패턴 중 랜덤한 값 설정
         patt_Now = e_Patten[rand];
@@ -572,7 +562,7 @@ public class EnemySript : CharacScript
 
         if (enemyType == EnemyType.B_Monster)    // 보스 몬스터일 경우
         {
-            int summon_Count = 0;
+            int summon_Count = 0;       // 소환된 몬스터가 있는지 체크할 변수
 
             for (int ii = 0; ii < summon_Obj.Length; ii++)
             {
@@ -580,7 +570,7 @@ public class EnemySript : CharacScript
                     summon_Count++;
             }
 
-            if (summon_Count >= 2)
+            if (summon_Count >= 2)      // 몬스터의 자리가 2개 이상 비어있으면 소환 패턴으로 설정
                 patt_Now = EnemyPatt.Summon;
         }
 
@@ -589,46 +579,46 @@ public class EnemySript : CharacScript
         {
             case EnemyPatt.Attack:
                 {
-                    value = (att_Point * att_Up).ToString();
+                    value = (att_Point * att_Up).ToString();        // 최종 피해량을 문자열로 저장
                 }
                 break;
             case EnemyPatt.Defence:
                 {
-                    value = (def_Point * def_Up).ToString();
+                    value = (def_Point * def_Up).ToString();        // 저장할 방어력 값을 문자열로 저장
                 }
                 break;
             case EnemyPatt.MultiAtt:
                 {
-                    value = ((att_Point * 0.5f) * att_Up).ToString();
+                    value = ((att_Point * 0.5f) * att_Up).ToString();       // 멀티 공격의 피해량을 문자열로 저장
                 }
                 break;
             case EnemyPatt.AttDrain:
                 {
-                    value = (att_Point * att_Up).ToString();
+                    value = (att_Point * att_Up).ToString();        // 최종 피해량을 문자열로 저장
                 }
                 break;
         }
 
-        patt_Obj.GetComponent<PattScript>().PattSetting(patt_Now, value);
+        patt_Obj.GetComponent<PattScript>().PattSetting(patt_Now, value);       // 패턴 표시용 오브젝트를 해당 패턴으로 설정
     }
 
-    void DefenceReset()
+    void DefenceReset()     // 방어 리셋 함수
     {
-        BuffScript[] Ref_List = null;
-        Ref_List = buff_Root.GetComponentsInChildren<BuffScript>();
+        BuffScript[] Ref_List = null;       // 적용 중인 버프를 저장할 배열
+        Ref_List = buff_Root.GetComponentsInChildren<BuffScript>();     // 적용중인 모든 버프를 저장
 
         for (int ii = 0; ii < Ref_List.Length; ii++)
         {
-            if (Ref_List[ii].buffType != BuffType.Defence)
+            if (Ref_List[ii].buffType != BuffType.Defence)  // 버프 타입이 방어일 경우만 실행
                 continue;
 
-            if (def_Save <= 0)
+            if (def_Save <= 0)      // 저장된 방어력이 남아 있다면
             {
-                Destroy(Ref_List[ii].gameObject);
-                def_Save = 0;
+                Destroy(Ref_List[ii].gameObject);       // 해당 버프 오브젝트 제거
+                def_Save = 0;       // 저장된 방어력 초기화
             }
             else
-                Ref_List[ii].buff_Txt.text = def_Save.ToString();
+                Ref_List[ii].buff_Txt.text = def_Save.ToString();   // 방어력 텍스트를 저장된 방어력으로 수정
 
         }
     }

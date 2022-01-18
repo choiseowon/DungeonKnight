@@ -195,67 +195,67 @@ public class HeroScript : CharacScript
     #endregion
 
     #region ---------- Damage Funcs
-    public void DamageCall(float a_Damage, EnemySript a_Enemy)
+    public void DamageCall(float a_Damage, EnemySript a_Enemy)      // 대미지를 받을 때 호출되는 함수
     {
-        float m_Damage = a_Damage;
-        m_Enemy = a_Enemy;
+        float m_Damage = a_Damage;  // 매개변수로 넘어온 값 저장
+        m_Enemy = a_Enemy;      // 공격한 몬스터 저장
 
-        if (multi_Count > 0)
+        if (multi_Count > 0)    // 멀티 공격일 경우 따로 변수 추가 저장
             multi_Damage = a_Damage;
 
-        if (def_Save > 0)
+        if (def_Save > 0)       // 저장된 방어력이 있는지 체크
         {
-            m_Damage = a_Damage - def_Save;
-            def_Save -= a_Damage;
+            m_Damage = a_Damage - def_Save;     // 저장된 방어력만큼 피해 감소
+            def_Save -= a_Damage;       // 저장된 방어력 감소
 
-            if (m_Damage <= 0)
-                m_Damage = 0;
+            if (m_Damage <= 0)      // 피해가 0 보다 작을 경우
+                m_Damage = 0;       // 0 으로 변경
 
-            DefenceReset();
+            DefenceReset();     // 방어력 초기화
         }
 
         if (a_Enemy.enemyType == EnemyType.B_Monster)
             a_Enemy.drain_Point = (int)m_Damage;
 
-        GameObject eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);
-        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);
-        eff.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+        GameObject eff = Instantiate(StageScript.Inst.eff_Obj, transform.position, transform.rotation);     // 이펙트 생성
+        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);       // 이벤트 오브젝트를 모아두기 위한 부모 오브젝트 설정
+        eff.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);       // 크기 조정
 
-        if(m_Damage > 0)
+        if (m_Damage > 0)       // 피해량이 0 보다 크다면
         {
-            string m_Str = "- " + Mathf.Floor(m_Damage).ToString();
-            eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(255, 50, 50, 255), Color.white);
-            SoundScript.Inst.SoundControl("Damage");
+            string m_Str = "- " + Mathf.Floor(m_Damage).ToString();     // 피해량(내림)을 문자열로 저장
+            eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(255, 50, 50, 255), Color.white);      // 이펙트를 텍스트로 설정. 매개변수로 문자열과 기본색상, 테두리 색상 값을 넘겨줌
+            SoundScript.Inst.SoundControl("Damage");    // 사운드 재생
         }
         else
         {
-            string m_Str = "방어함";
-            eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(255, 255, 255, 255), Color.black);
-            SoundScript.Inst.SoundControl("Guard");
+            string m_Str = "방어함";       // 피해량이 0 이면 해당 문자열 저장
+            eff.GetComponent<EffectScript>().TextSetting(m_Str, new Color32(255, 255, 255, 255), Color.black);      // 이펙트를 텍스트로 설정. 매개변수로 문자열과 기본색상, 테두리 색상 값을 넘겨줌
+            SoundScript.Inst.SoundControl("Guard");     // 사운드 재생
         }
 
 
-        now_Hp -= m_Damage;
-        if (now_Hp <= 0)
-            now_Hp = 0;
+        now_Hp -= m_Damage;     // 대미지 수치 만큼 현재 체력 감소
+        if (now_Hp <= 0)        // 현재 체력이 0보다 작거나 같을 경우
+            now_Hp = 0;         // 0으로 설정
 
-        GlobalScript.g_HealthNow = now_Hp;
+        GlobalScript.g_HealthNow = now_Hp;      // static으로 현제 체력 값 저장
 
-        DefenceReset();
+        DefenceReset();     // 방어력 초기화
 
-        anim.Play(anim_Clip[(int)EnemyClip.Damage].name, -1, 0.0f);
+        anim.Play(anim_Clip[(int)EnemyClip.Damage].name, -1, 0.0f);     // 대미지 애니메이션을 처음부터 재생(멀티 공격을 받으면 여러번 피격되는 효과를 위해 애니메이션 초기화가 필요)
 
-        HpImgCheck(now_Hp, max_Hp);
+        HpImgCheck(now_Hp, max_Hp);     // 체력 표시 이미지 설정 함수
 
     }
 
     public void HpImgCheck(float a_Now, float a_Max)
     {
         if (hp_Img != null)
-            hp_Img.fillAmount = a_Now / a_Max;
+            hp_Img.fillAmount = a_Now / a_Max;        // 체력 이미지를 해당 비율에 맞게 설정
 
         if (hp_Text != null)
-            hp_Text.text = (int)a_Now + " / " + (int)a_Max;
+            hp_Text.text = (int)a_Now + " / " + (int)a_Max;     // 체력 표기 텍스트 수정
     }
 
     public void MultiCheck()
