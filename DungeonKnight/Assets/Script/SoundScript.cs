@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SoundClass     // 사운드 관련 변수와 변수 값 설정 함수 클래스
 {
-    AudioSource audio;      // 오디오를 저장할 변수
+    public AudioSource audio;      // 오디오를 저장할 변수
     string audio_Str;       // 사운드 검색 시 체크하기 위한 변수
     float origin_Volume = 0.0f;     // 각각의 사운드 마다 설정 해둔 사운드 크기 저장
 
@@ -13,13 +13,6 @@ public class SoundClass     // 사운드 관련 변수와 변수 값 설정 함�
         audio = a_Audio;    // 매개변수로 받아온 오디오 저장
         audio_Str = a_Str;  // 매개변수로 받아온 이름 저장
         origin_Volume = a_Audio.volume;     // 오디오 고유의 소리 크기 저장
-    }
-
-    public void SoundReturn(out AudioSource a_Audio, out string a_Str)  // 매개변수로 받아온 변수에 해당 클래스의 변수 값을 넘겨 줌
-    {
-        a_Audio = audio;        // 매개 변수에 받아온 변수에 해당 클래스의 변수 값을 대입
-        a_Str = audio_Str;        // 매개 변수에 받아온 변수에 해당 클래스의 변수 값을 대입
-
     }
 
     public void SoundVolume(float bg_V, float sf_V)     // 클래스에 저장된 오디오의 볼륨을 조절하는 함수
@@ -98,22 +91,18 @@ public class SoundScript : MonoBehaviour
             }
         }
 
-        AudioSource audio;      // 검색된 클래스의 오디오를 저장할 변수
-        string m_Str;           // 검색된 클래스의 오디오 이름을 저장할 변수
-        play_Sound.SoundReturn(out audio, out m_Str);       // 해당 클래스의 오디오와 이름을 매개변수에 저장
-
-        if (audio.tag.Contains("Bgm") == true)      // 해당 오디오가 배경음악일 경우
+        if (play_Sound.audio.tag.Contains("Bgm") == true)      // 해당 오디오가 배경음악일 경우
         {
             if (now_Sound == play_Sound)        // 해당 오디오가 재생되고 있는 오디오와 같을 경우 반환
                 return;
 
-            audio.Play();       // 오디오 재생
+            play_Sound.audio.Play();       // 오디오 재생
             now_Sound.SoundStop();      // 이전에 재생되고 있던 배경음악 정지
             now_Sound = play_Sound;     // 새로 재생되고 있는 오디오의 클래스를 비교용 클래스에 저장
         }
         else
         {
-            audio.PlayOneShot(audio.clip);      // 해당 오디오 한 번 재생
+            play_Sound.audio.PlayOneShot(play_Sound.audio.clip);      // 해당 오디오 한 번 재생
         }
 
     }
