@@ -33,7 +33,7 @@ public class GlobalScript
     public static StageType g_StageType = StageType.Count;
 
     [Header("----- Sound -----")]
-    public static float bg_Volume = 1.0f;
+    public static float bgm_Volume = 1.0f;
     public static float sf_Volume = 1.0f;
     #endregion
 

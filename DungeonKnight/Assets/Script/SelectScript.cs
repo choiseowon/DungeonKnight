@@ -22,6 +22,8 @@ public class SelectScript : MonoBehaviour
 
     void Start()
     {
+        SoundScript.Inst.BgmSoundPlay("Normal_Bgm");
+
         if (GlobalScript.g_MapBool == false)
         {
             Inst = this;
@@ -77,6 +79,7 @@ public class SelectScript : MonoBehaviour
         }
         else
         {
+            canvas.gameObject.SetActive(false);
             canvas = GlobalScript.g_SelecCanvas;
             canvas.gameObject.SetActive(true);
         }

@@ -68,13 +68,15 @@ public class StartMainScript : MonoBehaviour
             });
 
         GlobalScript.ValueReset();
-        bg_Slider.value = GlobalScript.bg_Volume;
+        bg_Slider.value = GlobalScript.bgm_Volume;
         sf_Slider.value = GlobalScript.sf_Volume;
+
+        SoundScript.Inst.BgmSoundPlay("Main_Bgm");
     }
 
     void Update()
     {
-        GlobalScript.bg_Volume = bg_Slider.value;
+        GlobalScript.bgm_Volume = bg_Slider.value;
         GlobalScript.sf_Volume = sf_Slider.value;
     }
 

@@ -54,10 +54,14 @@ public class FadeScript : MonoBehaviour
                         FadeEnabled(true);
                         GlobalScript.g_SelecCanvas.gameObject.SetActive(false);
                     }
-                        
+
                 }
 
+                PlayerPrefs.SetFloat("BgmVolume", GlobalScript.bgm_Volume);   // 게임 종료 시 볼륨값 로컬로 저장
+                PlayerPrefs.SetFloat("SfVolume", GlobalScript.sf_Volume);   // 게임 종료 시 볼륨값 로컬로 저장
+
                 SceneManager.LoadScene(m_SceneName);
+
             }
                 
 

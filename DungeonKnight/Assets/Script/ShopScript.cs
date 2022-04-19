@@ -22,7 +22,9 @@ public class ShopScript : MonoBehaviour
     public Text armor_Txt = null;
 
     [Header("----- Card -----")]
-    public GameObject[] card_Btn = null;
+    public GameObject card_Root = null;
+    public Transform[] card_Tr = new Transform[5];
+    List<CardClass> card_List = new List<CardClass>();
     public Text[] card_GTxt = null;
 
     void Start()
@@ -30,15 +32,19 @@ public class ShopScript : MonoBehaviour
         Inst = this;
         shop_Root.transform.position = new Vector3(GlobalScript.g_Width / 2, GlobalScript.g_Height / 2, 0);
 
-        for (int ii = 0; ii < card_Btn.Length; ii++)
+        for(int ii = 0; ii < 5; ii++)
         {
             int rand = Random.Range(0, (int)CardType.Count);
-            CardScript cardScript = card_Btn[ii].GetComponent<CardScript>();
-            cardScript.card_Type = (CardType)rand;
-            cardScript.cardState = CardState.Shop;
-            cardScript.CardSetting();
-            int gold = cardScript.card_Gold;
-            card_GTxt[ii].text = gold + " 골드";
+            GameObject obj = Instantiate(CardCtrlScript.Inst.card_Obj[rand]);
+            obj.transform.SetParent(card_Root.transform);
+            obj.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+            obj.transform.position = card_Tr[ii].position;
+            CardClass cardClass = obj.GetComponent<CardClass>();
+            card_List.Add(cardClass);
+            cardClass.cardState = CardState.Shop;
+            cardClass.CardSetting();
+            card_GTxt[ii].text = cardClass.card_Gold + " 골드";
+            card_GTxt[ii].transform.SetParent(obj.transform);
         }
 
         if (shop_OBtn != null)
@@ -90,11 +96,11 @@ public class ShopScript : MonoBehaviour
             weapon_Txt.text = "추가 공격력 + 4" + "\n" + GlobalScript.g_ShopWeapon.ToString() + " 골드";
             user_GTxt.text = "소지금" + "\n\n" + GlobalScript.g_Gold.ToString() + " 골드";
 
-            SoundScript.Inst.SoundControl("Buy");
+            SoundScript.Inst.SfSoundPlay("ItemBuy");
             StopScript.Inst.StateUpdate();
 
-            for(int ii = 0; ii < card_Btn.Length; ii++)
-                card_Btn[ii].GetComponent<CardScript>().CardSetting();
+            for(int ii = 0; ii < card_List.Count; ii++)
+                card_List[ii].CardSetting();
         }
         else
         {
@@ -113,11 +119,11 @@ public class ShopScript : MonoBehaviour
             shield_Txt.text = "추가 방어력 + 3" + "\n" + GlobalScript.g_ShopShield.ToString() + " 골드";
             user_GTxt.text = "소지금" + "\n\n" + GlobalScript.g_Gold.ToString() + " 골드";
 
-            SoundScript.Inst.SoundControl("Buy");
+            SoundScript.Inst.SfSoundPlay("ItemBuy");
             StopScript.Inst.StateUpdate();
 
-            for (int ii = 0; ii < card_Btn.Length; ii++)
-                card_Btn[ii].GetComponent<CardScript>().CardSetting();
+            for (int ii = 0; ii < card_List.Count; ii++)
+                card_List[ii].CardSetting();
         }
         else
         {
@@ -138,12 +144,12 @@ public class ShopScript : MonoBehaviour
             armor_Txt.text = "추가 체력 + 15" + "\n" + GlobalScript.g_ShopArmor.ToString() + " 골드";
             user_GTxt.text = "소지금" + "\n\n" + GlobalScript.g_Gold.ToString() + " 골드";
 
-            SoundScript.Inst.SoundControl("Buy");
+            SoundScript.Inst.SfSoundPlay("ItemBuy");
             StopScript.Inst.StateUpdate();
-            HeroScript.Inst.HpImgCheck(GlobalScript.g_HealthNow, GlobalScript.g_HealthMax);
+            HeroScript.Inst.hp_Ui.HpSetting(GlobalScript.g_HealthMax, GlobalScript.g_HealthNow);
 
-            for (int ii = 0; ii < card_Btn.Length; ii++)
-                card_Btn[ii].GetComponent<CardScript>().CardSetting();
+            for (int ii = 0; ii < card_List.Count; ii++)
+                card_List[ii].CardSetting();
         }
         else
         {
@@ -152,12 +158,12 @@ public class ShopScript : MonoBehaviour
 
     }
 
-    public bool ShopCard(int a_Gold)
+    public bool ShopCard(int a_Gold, GameObject card_Obj)
     {
         if (GlobalScript.g_Gold >= a_Gold)
         {
             GlobalScript.g_Gold -= a_Gold;
-            SoundScript.Inst.SoundControl("Buy");
+            SoundScript.Inst.SfSoundPlay("ItemBuy");
             user_GTxt.text = "소지금" + "\n\n" + GlobalScript.g_Gold.ToString() + " 골드";
             return true;
         }

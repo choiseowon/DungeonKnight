@@ -64,18 +64,30 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Script\ArrowScript.cs" />
     <Compile Include="Assets\Script\BuffScript.cs" />
-    <Compile Include="Assets\Script\CardCtrlScript.cs" />
-    <Compile Include="Assets\Script\CardScript.cs" />
+    <Compile Include="Assets\Script\Card\CardAllAttScript.cs" />
+    <Compile Include="Assets\Script\Card\CardAttDefScript.cs" />
+    <Compile Include="Assets\Script\Card\CardAttUpScript.cs" />
+    <Compile Include="Assets\Script\Card\CardAttackScript.cs" />
+    <Compile Include="Assets\Script\Card\CardClass.cs" />
+    <Compile Include="Assets\Script\Card\CardCtrlScript.cs" />
+    <Compile Include="Assets\Script\Card\CardDefScript.cs" />
+    <Compile Include="Assets\Script\Card\CardMultiAttScript.cs" />
     <Compile Include="Assets\Script\CharacScript.cs" />
     <Compile Include="Assets\Script\EffAnimScript.cs" />
     <Compile Include="Assets\Script\EffectScript.cs" />
-    <Compile Include="Assets\Script\EnemySript.cs" />
     <Compile Include="Assets\Script\EventScript.cs" />
     <Compile Include="Assets\Script\FadeScript.cs" />
     <Compile Include="Assets\Script\GlobalScript.cs" />
     <Compile Include="Assets\Script\HeroScript.cs" />
+    <Compile Include="Assets\Script\HpUiScript.cs" />
+    <Compile Include="Assets\Script\InterfaceScript.cs" />
+    <Compile Include="Assets\Script\Monster\BossMonScript.cs" />
+    <Compile Include="Assets\Script\Monster\EliteKnightScript.cs" />
+    <Compile Include="Assets\Script\Monster\EliteThiefScript.cs" />
+    <Compile Include="Assets\Script\Monster\MonGhostScript.cs" />
+    <Compile Include="Assets\Script\Monster\MonKnightScript.cs" />
+    <Compile Include="Assets\Script\Monster\MonThiefScript.cs" />
     <Compile Include="Assets\Script\PattScript.cs" />
     <Compile Include="Assets\Script\SelectScript.cs" />
     <Compile Include="Assets\Script\ShopScript.cs" />

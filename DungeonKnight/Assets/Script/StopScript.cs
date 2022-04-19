@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class StopScript : MonoBehaviour
 {
@@ -23,9 +24,10 @@ public class StopScript : MonoBehaviour
     public Text gold_Txt = null;
 
     [Header("----- Card -----")]
-    public GameObject card_Obj = null;
+    public GameObject[] card_Prefab = null;
     public GameObject card_Root = null;
-    public GameObject card_List = null;
+    public GameObject card_Content = null;
+    List<GameObject> card_List = new List<GameObject>();
     public Button card_CBtn = null;
 
     [Header("----- Option -----")]
@@ -38,7 +40,6 @@ public class StopScript : MonoBehaviour
     public GameObject end_Obj = null;
     public Button end_OKBtn = null;
     public Button end_NOBtn = null;
-
 
     void Start()
     {
@@ -104,7 +105,7 @@ public class StopScript : MonoBehaviour
                 op_Obj.SetActive(false);
             });
 
-        bg_Slider.value = GlobalScript.bg_Volume;
+        bg_Slider.value = GlobalScript.bgm_Volume;
         sf_Slider.value = GlobalScript.sf_Volume;
 
         StateUpdate();
@@ -113,7 +114,7 @@ public class StopScript : MonoBehaviour
 
     void Update()
     {
-        GlobalScript.bg_Volume = bg_Slider.value;
+        GlobalScript.bgm_Volume = bg_Slider.value;
         GlobalScript.sf_Volume = sf_Slider.value;
     }
 
@@ -127,16 +128,21 @@ public class StopScript : MonoBehaviour
 
     void CardDecList()
     {
-        for(int ii = 0; ii < GlobalScript.g_CardDec.Count; ii++)
+        for (int ii = 0; ii < GlobalScript.g_CardDec.Count; ii++)
         {
-            GameObject card = Instantiate(card_Obj);
-            card.transform.SetParent(card_List.transform);
-            card.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-            CardScript cardScript = card.GetComponent<CardScript>();
-            cardScript.card_Type = GlobalScript.g_CardDec[ii];
-            cardScript.cardState = CardState.Option;
-            cardScript.CardSetting();
+            CardNewInput(ii);
         }
+    }
+
+    public void CardNewInput(int index)
+    {
+        GameObject card = Instantiate(card_Prefab[(int)GlobalScript.g_CardDec[index]]);
+        card.transform.SetParent(card_Content.transform);
+        card.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+        card_List.Add(card);
+        CardClass cardScript = card.GetComponent<CardClass>();
+        cardScript.cardState = CardState.Option;
+        cardScript.CardSetting();
     }
 
     void FadeCall(string a_SceneName)

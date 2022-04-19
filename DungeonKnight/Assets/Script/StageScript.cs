@@ -23,6 +23,7 @@ public enum TurnState
 
 public class StageScript : MonoBehaviour
 {
+    public Queue<GameObject> monster_Pool = new Queue<GameObject>();
 
     public static StageScript Inst = null;
     public TurnState turnState = TurnState.HeroTurn;
@@ -35,7 +36,7 @@ public class StageScript : MonoBehaviour
     [Header("----- Enemy -----")]
     public GameObject enemy_Root = null;
     public int enemy_Level = 1;
-    [HideInInspector] public List<EnemySript> enemy_List = new List<EnemySript>();
+    [HideInInspector] public List<GameObject> enemy_List = new List<GameObject>();
     public GameObject[] enemy_Prefab = null;
     public int pattCount = 0;
 
@@ -47,7 +48,7 @@ public class StageScript : MonoBehaviour
     public Button reward_RBtn = null;
     public GameObject reward_CObj = null;
     public Button reward_CCBtn = null;
-    public GameObject[] reward_Card = new GameObject[3];
+    public Transform[] reward_Tr = new Transform[3];
     int reward_Gold = 0;
 
     [Header("----- Shop -----")]
@@ -69,10 +70,6 @@ public class StageScript : MonoBehaviour
     public GameObject battle_UI = null;
     public GameObject event_UI = null;
     public FadeScript fadeScript = null;
-    public Canvas m_Canvas = null;
-    public GameObject eff_Root = null;
-    public GameObject eff_Obj = null;
-    public GameObject buff_Obj = null;
     public Button turn_Btn = null;
     public Image mana_Img = null;
     public Text mana_Txt = null;
@@ -87,9 +84,13 @@ public class StageScript : MonoBehaviour
         if (turn_Btn != null)
             turn_Btn.onClick.AddListener(() =>
             {
-                HeroScript.Inst.HeroTurnEnd();
+                if (CardCtrlScript.Inst.click_Card != null)
+                    return;
 
-                if(turnState == TurnState.EnemyTurn)
+                turnState = TurnState.EnemyTurn;
+                HeroScript.Inst.PattAdd("TurnEnd");
+
+                if (turnState == TurnState.EnemyTurn)
                     turn_Btn.gameObject.SetActive(false);
             });
 
@@ -108,7 +109,7 @@ public class StageScript : MonoBehaviour
         if (reward_GBtn != null)
             reward_GBtn.onClick.AddListener(() =>
             {
-                SoundScript.Inst.SoundControl("Buy");
+                SoundScript.Inst.SfSoundPlay("ItemBuy");
                 GlobalScript.g_Gold += reward_Gold;
                 reward_GBtn.gameObject.SetActive(false);
             });
@@ -141,43 +142,43 @@ public class StageScript : MonoBehaviour
         {
             case StageType.Monster:
                 {
-                    SoundScript.Inst.SoundControl("Normal");
+                    SoundScript.Inst.BgmSoundPlay("Normal_Bgm");
                     EnemyCreate();
                     battle_UI.SetActive(true);
                 }
                 break;
             case StageType.Shop:
                 {
-                    SoundScript.Inst.SoundControl("Normal");
+                    SoundScript.Inst.BgmSoundPlay("Normal_Bgm");
                     EventCreate(shop_Obj);
                     event_UI.SetActive(true);
                 }
                 break;
             case StageType.Box:
                 {
-                    SoundScript.Inst.SoundControl("Normal");
+                    SoundScript.Inst.BgmSoundPlay("Normal_Bgm");
                     EventCreate(box_Obj);
                     event_UI.SetActive(true);
                 }
                 break;
             case StageType.Camp:
                 {
-                    SoundScript.Inst.SoundControl("Normal");
-                    SoundScript.Inst.SoundControl("Camping");
+                    SoundScript.Inst.BgmSoundPlay("Normal_Bgm");
+                    SoundScript.Inst.SfSoundPlay("Campfire");
                     EventCreate(camp_Obj);
                     event_UI.SetActive(true);
                 }
                 break;
             case StageType.Elite:
                 {
-                    SoundScript.Inst.SoundControl("Elite");
+                    SoundScript.Inst.BgmSoundPlay("Elite_Bgm");
                     EnemyCreate();
                     battle_UI.SetActive(true);
                 }
                 break;
             case StageType.Boss:
                 {
-                    SoundScript.Inst.SoundControl("Boss");
+                    SoundScript.Inst.BgmSoundPlay("Boss_Bgm");
                     boss_BGImg.SetActive(true);
                     EnemyCreate();
                     battle_UI.SetActive(true);
@@ -228,8 +229,7 @@ public class StageScript : MonoBehaviour
                 enemy_Obj.transform.position = new Vector3(posX, GlobalScript.g_Height * 0.6f, 0);
                 enemy_Obj.transform.SetParent(enemy_Root.transform);
                 enemy_Obj.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
-                enemy_Obj.GetComponent<EnemySript>().enemyType = (EnemyType)rand;
-                enemy_List.Add(enemy_Obj.GetComponent<EnemySript>());
+                enemy_List.Add(enemy_Obj);
             }
         }
         else if(stageType == StageType.Elite)
@@ -242,8 +242,7 @@ public class StageScript : MonoBehaviour
             enemy_Obj.transform.position = new Vector3(posX, GlobalScript.g_Height * 0.6f, 0);
             enemy_Obj.transform.SetParent(enemy_Root.transform);
             enemy_Obj.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
-            enemy_Obj.GetComponent<EnemySript>().enemyType = (EnemyType)rand;
-            enemy_List.Add(enemy_Obj.GetComponent<EnemySript>());
+            enemy_List.Add(enemy_Obj);
         }
         else if(stageType == StageType.Boss)
         {
@@ -255,49 +254,53 @@ public class StageScript : MonoBehaviour
             enemy_Obj.transform.position = new Vector3(posX, GlobalScript.g_Height * 0.6f, 0);
             enemy_Obj.transform.SetParent(enemy_Root.transform);
             enemy_Obj.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
-            enemy_Obj.GetComponent<EnemySript>().enemyType = (EnemyType)rand;
-            enemy_List.Add(enemy_Obj.GetComponent<EnemySript>());
+            enemy_List.Add(enemy_Obj);
         }
+
+        foreach(GameObject obj in enemy_List)
+            monster_Pool.Enqueue(obj);
     }
 
     public void EnemyPattCall()
     {
-        if(turnState == TurnState.HeroTurn)     // 현재 플레이어의 턴일 경우
-        {
-            turnState = TurnState.EnemyTurn;    // 몬스터의 턴으로 변경
+        TargetReset();
 
-            for (int ii = 0; ii < enemy_List.Count; ii++)
-                enemy_List[ii].patt_Bool = true;    // 모든 몬스터의 패턴을 진행하도록 조건 변경
-        }
+        if (HeroScript.Inst.die_Bool == true)       // 플레이어가 죽었는지 체크
+            return;
 
-        if (pattCount >= enemy_List.Count)      // 패턴을 진행한 몬스터의 수가 존재하는 몬스터의 수와 같다면
+        if (monster_Pool.Count <= 0)      // 패턴을 진행할 몬스터의 수가 0 보다 작거나 같다면
         {
-            pattCount = 0;      // 패턴을 진행한 몬스터의 수 초기화
             turnState = TurnState.HeroTurn;     // 플레이어 턴으로 변경
-            HeroScript.Inst.HeroTurnStart();    // 플레이터 턴 설정 함수 호출
 
-            if (HeroScript.Inst.die_Bool == true)       // 플레이어가 죽었는지 체크
-                return;
-
+            HeroScript.Inst.BuffCount();        // 버프 카운트 감소
             ManaSetting(0, true);       // 카드 사용을 위한 마나 초기화
-
-            for (int ii = 0; ii < enemy_List.Count; ii++)
-                enemy_List[ii].patt_Obj.SetActive(true);        // 몬스터 패턴 표시 오브젝트를 활성화
+            EnemyPattReset();       // 몬스터 패턴 리셋
 
             CardCtrlScript.Inst.CardDraw(0, true, turn_Btn.gameObject);     // 카드를 드로우
-
-            return;
         }
-
-        for (int ii = 0; ii < enemy_List.Count; ii++)       // 존재하는 몬스터 만큼 반복
+        else if(monster_Pool.Count > 0)     // 패턴을 진행할 몬스터가 있다면
         {
-            if(enemy_List[ii].patt_Bool == true)        // 몬스터가 패턴을 실행했는지 체크
-            {
-                enemy_List[ii].PatternCall();   // 몬스터의 패턴 호출
-                pattCount++;        // 패턴 진행된 몬스터 수 증가
+            GameObject obj = monster_Pool.Dequeue();     // 가장 처음 저장된 몬스터를 꺼내옴
+            obj.GetComponent<MonsterClass>().PattCall();     // 몬스터 패턴 호출
+        }
+    }
 
-                break;
-            }
+    public void EnemyPoolReset()
+    {
+        monster_Pool.Clear();
+
+        foreach (GameObject obj in enemy_List)
+            monster_Pool.Enqueue(obj);
+    }
+
+    public void EnemyPattReset()
+    {
+        monster_Pool.Clear();
+
+        foreach (GameObject obj in enemy_List)
+        {
+            obj.GetComponent<MonsterClass>().PattSetting();
+            monster_Pool.Enqueue(obj);
         }
     }
 
@@ -307,12 +310,14 @@ public class StageScript : MonoBehaviour
 
         if (stageType == StageType.Boss)
         {
-            SoundScript.Inst.SoundControl("Victory");
+            SoundScript.Inst.BgmSoundPlay("Victory_Bgm");
+            SoundScript.Inst.bgm_Audio.loop = false;
             clear_Obj.SetActive(true);
             return;
         }
 
-        SoundScript.Inst.SoundControl("Clear");
+        SoundScript.Inst.BgmSoundPlay("Clear_Bgm");
+        SoundScript.Inst.bgm_Audio.loop = false;
         reward_Root.SetActive(true);
 
         if (stageType == StageType.Elite)
@@ -338,13 +343,26 @@ public class StageScript : MonoBehaviour
             GlobalScript.g_EnemyLev = enemy_Level;
         }
 
-        for (int ii = 0; ii < reward_Card.Length; ii++)
+        for (int ii = 0; ii < 3; ii++)
         {
             int rand = Random.Range(0, (int)CardType.Count);
+            GameObject obj = Instantiate(CardCtrlScript.Inst.card_Obj[rand]);
+            obj.transform.SetParent(reward_CObj.transform);
+            obj.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+            obj.transform.position = reward_Tr[ii].position;
+            CardClass cardClass = obj.GetComponent<CardClass>();
+            cardClass.cardState = CardState.Reward;
+            cardClass.CardSetting();
+        }
+    }
 
-            reward_Card[ii].GetComponent<CardScript>().card_Type = (CardType)rand;
-            reward_Card[ii].GetComponent<CardScript>().cardState = CardState.Reward;
-            reward_Card[ii].GetComponent<CardScript>().CardSetting();
+    public void TargetOn()
+    {
+        for (int ii = 0; ii < enemy_List.Count; ii++)
+        {
+            MonsterClass monsterClass = enemy_List[ii].GetComponent<MonsterClass>();
+            if (monsterClass.target_Btn != null)
+                monsterClass.target_Btn.image.enabled = true;
         }
     }
 
@@ -352,7 +370,9 @@ public class StageScript : MonoBehaviour
     {
         for(int ii = 0; ii < enemy_List.Count; ii++)
         {
-            enemy_List[ii].target_Btn.image.enabled = false;
+            MonsterClass monsterClass = enemy_List[ii].GetComponent<MonsterClass>();
+            if (monsterClass.target_Btn != null)
+                monsterClass.target_Btn.image.enabled = false;
         }
     }
 

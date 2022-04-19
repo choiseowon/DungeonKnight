@@ -43,8 +43,8 @@ public class EventScript : MonoBehaviour
         if(box_Anim != null)
             box_Anim.SetTrigger("Open");
 
-        SoundScript.Inst.SoundControl("BoxOpen");
-        SoundScript.Inst.SoundControl("Buy");
+        SoundScript.Inst.SfSoundPlay("BoxOpen");
+        SoundScript.Inst.SfSoundPlay("ItemBuy");
 
         GlobalScript.g_Gold += 500;
 
@@ -60,20 +60,17 @@ public class EventScript : MonoBehaviour
             return;
 
         GlobalScript.g_HealthNow = GlobalScript.g_HealthMax;
+        HeroScript.Inst.hp_Ui.HpSetting(GlobalScript.g_HealthMax, GlobalScript.g_HealthNow);
 
         //GlobalScript.g_HealthNow += GlobalScript.g_HealthMax / 5;
 
         //if (GlobalScript.g_HealthNow >= GlobalScript.g_HealthMax)
         //    GlobalScript.g_HealthNow = GlobalScript.g_HealthMax;
 
-        HeroScript.Inst.HpImgCheck(GlobalScript.g_HealthNow, GlobalScript.g_HealthMax);
+        //HeroScript.Inst.HpImgCheck(GlobalScript.g_HealthNow, GlobalScript.g_HealthMax);
+        HeroScript.Inst.eff_Root.EffectSetting(EffectType.Potion, HeroScript.Inst.gameObject);
         HeroScript.Inst.anim.SetTrigger("Potion");
-
-        GameObject eff = Instantiate(StageScript.Inst.eff_Obj, HeroScript.Inst.transform.position, transform.rotation);
-        eff.transform.SetParent(StageScript.Inst.eff_Root.transform);
-        eff.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-        eff.GetComponent<EffectScript>().EffectSetting(EffectType.Potion, this.gameObject);
-        SoundScript.Inst.SoundControl("Potion");
+        SoundScript.Inst.SfSoundPlay("Potion");
 
         camp_Txt.gameObject.SetActive(true);
         click_Txt.gameObject.SetActive(false);

@@ -1,109 +1,93 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class SoundClass     // 사운드 관련 변수와 변수 값 설정 함수 클래스
-{
-    public AudioSource audio;      // 오디오를 저장할 변수
-    string audio_Str;       // 사운드 검색 시 체크하기 위한 변수
-    float origin_Volume = 0.0f;     // 각각의 사운드 마다 설정 해둔 사운드 크기 저장
-
-    public void SoundSetting(AudioSource a_Audio, string a_Str)     // 사운드 저장 함수
-    {
-        audio = a_Audio;    // 매개변수로 받아온 오디오 저장
-        audio_Str = a_Str;  // 매개변수로 받아온 이름 저장
-        origin_Volume = a_Audio.volume;     // 오디오 고유의 소리 크기 저장
-    }
-
-    public void SoundVolume(float bg_V, float sf_V)     // 클래스에 저장된 오디오의 볼륨을 조절하는 함수
-    {
-        if(audio.gameObject.tag.Contains("Bgm") == true)        // 배경음악인지 효과음인지 구분하는 조건
-        {
-            audio.volume = origin_Volume * bg_V;        // 원본 볼륨에 조절한 볼륨 값을 곱하는 계산
-        }
-        else
-        {
-            audio.volume = origin_Volume * sf_V;        // 원본 볼륨에 조절한 볼륨 값을 곱하는 계산
-        }
-    }
-    
-    public void SoundStop()     // 오디오를 중지 시키는 함수
-    {
-        if(audio != null)       // 오디오가 비어있지 않다는 조건
-        {
-            audio.gameObject.SetActive(false);      // 오디오가 붙어 있는 오브젝트를 끔
-            audio.gameObject.SetActive(true);       // 오디오가 붙어 있는 오브젝트를 킴, 끄고 키는 것으로 오디오 초기화
-        }
-    }
-
-    public bool SoundCheck(string str)      // 매개변수로 넘어온 이름이 해당 오디오의 이름과 같은지 비교
-    {
-        if (str == audio_Str)   // 이름이 같다면 참, 아니면 거짓 반환
-            return true;
-        else
-            return false;
-    }
-}
+using UnityEngine.SceneManagement;
 
 public class SoundScript : MonoBehaviour
 {
     public static SoundScript Inst;             // 해당 스크립트 싱글톤 선언   
-    public GameObject sound_Root = null;        // 오디오 오브젝트들의 부모 오브젝트
-    SoundClass[] sounds = new SoundClass[20];   // 존재하는 사운드의 최대 크기 만큼 배열 선언
-    SoundClass now_Sound = new SoundClass();    // 현재 재생되고 있는 클래스를 저장하기 위한 선언
+
+    public AudioSource bgm_Audio = null;    // 배경음악을 재생할 오디오
+    public AudioSource[] sf_Audio;       // 효과음을 재생할 오디오
+
+    Queue<AudioSource> sf_Pool = new Queue<AudioSource>();    // 효과음의 오브젝트 풀
+    Dictionary<string, AudioClip> bgm_Dict = new Dictionary<string, AudioClip>();   // 배경음악을 이름(키값) 클립(밸류)로 저장하기 위한 딕셔너리
+    Dictionary<string, AudioClip> sf_Dict = new Dictionary<string, AudioClip>();    // 효과음을 이름(키값) 클립(밸류)로 저장하기 위한 딕셔너리
+    AudioClip[] m_bgmClip;      // 배경음악의 클립들
+    AudioClip[] m_sfClip;       // 효과음의 클립들
 
     void Start()
     {
         Inst = this;
-        AudioSource[] m_Audio;      // 오디오 배열 선언
-        m_Audio = sound_Root.GetComponentsInChildren<AudioSource>();    // 선언한 오디오 배열에 모든 오디오를 대입
 
-        string[] m_Str = new string[m_Audio.Length];    // 대입한 오디오 오브젝트 만큼 배열 크기 선언
+        if (PlayerPrefs.HasKey("BgmVolume") == true)    // 로컬로 저장된 배경음악 볼륨값이 있는지 체크
+            GlobalScript.bgm_Volume = PlayerPrefs.GetFloat("BgmVolume", 0);   // 로컬로 저장된 배경음악의 볼륨으로 설정
 
-        for (int ii = 0; ii < m_Audio.Length; ii++)     // 오디오 개수 만큼 반복
+        if (PlayerPrefs.HasKey("SfVolume") == true)     // 로컬로 저장된 효과음의 볼륨값이 있는지 체크
+            GlobalScript.sf_Volume = PlayerPrefs.GetFloat("SfVolume", 0);     // 로컬로 저장된 효과음의 볼륨으로 설정
+
+        m_bgmClip = Resources.LoadAll<AudioClip>("Sound/BGM");      // Sound/BGM 폴더에 잇는 오디오클립들을 배열에 저장
+        m_sfClip = Resources.LoadAll<AudioClip>("Sound/SF");        // Sound/SF 폴더에 있는 오디오클립들을 배열에 저장
+
+        string clip_Str = "";   // 클립의 이름을 저장할 변수
+        foreach (AudioClip clip in m_bgmClip)   // 배경음악 클립들만큼 반복
         {
-            m_Str[ii] = m_Audio[ii].gameObject.name;    // 오디오의 이름을 변수로 저장
-            sounds[ii] = new SoundClass();      // 클래스 배열에 새로운 클래스 생성
-            sounds[ii].SoundSetting(m_Audio[ii], m_Str[ii]);    // 생성한 클래스에 해당 변수의 값을 넘겨줌
+            clip_Str = clip.name;   // 클립의 이름을 변수로 저장
+            bgm_Dict.Add(clip_Str, clip);   // 클립의 이름을 키값, 클립을 밸류로 딕셔너리에 추가
+        }
+
+        clip_Str = "";  // 문자열 초기화
+
+        foreach (AudioClip clip in m_sfClip)    // 효과음 클립들 만큼 반복
+        {
+            clip_Str = clip.name;   // 클립의 이름을 변수로 저장
+            sf_Dict.Add(clip_Str, clip);   // 클립의 이름을 키값, 클립을 밸류로 딕셔너리에 추가
+        }
+
+        foreach (AudioSource audio in sf_Audio)   // 효과음을 재생할 오디오의 개수 만큼 반복
+        {
+            sf_Pool.Enqueue(audio);   // 오브젝트 풀에 추가
         }
     }
 
     void Update()
     {
-        for(int ii = 0; ii < sounds.Length; ii++)       // 모든 오디오의 볼륨을 실시간으로 조정
-        {
-            if (sounds[ii] != null)     // 오디오가 있다면
-                sounds[ii].SoundVolume(GlobalScript.bg_Volume, GlobalScript.sf_Volume);     // 오디오 볼륨을 조정
-        }
-
+        bgm_Audio.volume = GlobalScript.bgm_Volume;   // 배경음악의 볼륨을 값을 조절
     }
 
-    public void SoundControl(string str)        // 사운드 재생이 필요할 경우 호출되는 함수
+    public void BgmSoundPlay(string sound_Str)      // 배경음악 재생용 함수
     {
-        SoundClass play_Sound = new SoundClass();       // 클래스 생성
+        AudioClip a_Clip = null;    // 클립을 저장할 변수
+        bgm_Dict.TryGetValue(sound_Str, out a_Clip);    // 매개변수로 넘어온 값과 같은 이름의 오디오 클립을 찾음
 
-        for(int ii = 0; ii < sounds.Length; ii++)       // 존재하는 오디오 만큼 반복
-        {
-            if (sounds[ii].SoundCheck(str))     // 매개변수로 입력된 이름과 같은 사운드를 검색
-            {
-                play_Sound = sounds[ii];        // 검색된 오디오의 클래스를 대입
-                break;
-            }
-        }
+        bgm_Audio.Stop();   // 재생중인 배경음악을 멈춤
+        bgm_Audio.clip = a_Clip;    // 오디오의 클립을 찾은 클립으로 변경
+        bgm_Audio.Play();   // 배경음악 재생
+    }
 
-        if (play_Sound.audio.tag.Contains("Bgm") == true)      // 해당 오디오가 배경음악일 경우
-        {
-            if (now_Sound == play_Sound)        // 해당 오디오가 재생되고 있는 오디오와 같을 경우 반환
-                return;
+    public void SfSoundPlay(string sound_Str)      // 배경음악 재생용 함수
+    {
+        AudioClip a_Clip = null;    // 클립을 저장할 변수
+        sf_Dict.TryGetValue(sound_Str, out a_Clip);    // 매개변수로 넘어온 값과 같은 이름의 오디오 클립을 찾음
 
-            play_Sound.audio.Play();       // 오디오 재생
-            now_Sound.SoundStop();      // 이전에 재생되고 있던 배경음악 정지
-            now_Sound = play_Sound;     // 새로 재생되고 있는 오디오의 클래스를 비교용 클래스에 저장
-        }
-        else
-        {
-            play_Sound.audio.PlayOneShot(play_Sound.audio.clip);      // 해당 오디오 한 번 재생
-        }
+        AudioSource a_Audio = null;     // 클립을 재생할 오디오를 저장할 변수
 
+        a_Audio = sf_Pool.Dequeue();  // 오브젝트 풀에서 하나를 가져옴
+        sf_Pool.Enqueue(a_Audio);     // 다시 오브젝트 풀에 추가
+
+        if (a_Audio == null)    // 저장한 오디오가 없을 경우 함수를 빠져나감
+            return;
+
+        a_Audio.volume = 1.0f;  // 볼륨 값 초기화
+        a_Audio.volume = a_Audio.volume * GlobalScript.sf_Volume;     // 저장된 볼륨 값만큼 조정
+        a_Audio.Stop();     // 재생중인 효과음 정지
+        a_Audio.clip = a_Clip;      // 찾은 클립으로 클립 변경
+        a_Audio.Play();     // 효과음 재생
+    }
+
+    void OnApplicationQuit()
+    {
+        PlayerPrefs.SetFloat("BgmVolume", GlobalScript.bgm_Volume);   // 게임 종료 시 볼륨값 로컬로 저장
+        PlayerPrefs.SetFloat("SfVolume", GlobalScript.sf_Volume);   // 게임 종료 시 볼륨값 로컬로 저장
     }
 }

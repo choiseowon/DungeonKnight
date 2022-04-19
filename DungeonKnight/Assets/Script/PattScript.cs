@@ -15,7 +15,20 @@ public class PattScript : MonoBehaviour
 
     void Update()
     {
-        
+
+    }
+
+    public void PattSetting(string a_Patt, string a_Value)
+    {
+        foreach (GameObject obj in patt_Obj)
+        {
+            obj.SetActive(false);
+        }
+
+        //patt_Obj[(int)a_Patt].SetActive(true);
+        this.transform.Find(a_Patt).gameObject.SetActive(true);
+        patt_Txt.gameObject.SetActive(true);
+        patt_Txt.text = a_Value;
     }
 
     public void PattSetting(EnemyPatt a_Patt, string a_Value)
