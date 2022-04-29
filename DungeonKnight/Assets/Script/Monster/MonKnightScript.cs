@@ -273,7 +273,7 @@ public class MonKnightScript : MonsterClass, IAttack, IDefence, IAttUp, IDamage
             SoundScript.Inst.SfSoundPlay("Guard");     // 사운드 재생
         }
 
-        if (now_Hp <= 0)
+        if (now_Hp <= 0 && target_Btn != null)
         {
             target_Btn.gameObject.SetActive(false);
             target_Btn = null;

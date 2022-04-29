@@ -42,8 +42,10 @@ ScriptsOnlyBuild:
     UnityEditor.Graphs.dll:
     - UnityEditor.Graphs.AnimationBlendTree.Graph
     - UnityEditor.Graphs.AnimationBlendTree.GraphGUI
+    - UnityEditor.Graphs.AnimationStateMachine.AnyStateNode
     - UnityEditor.Graphs.AnimationStateMachine.Graph
     - UnityEditor.Graphs.AnimationStateMachine.GraphGUI
+    - UnityEditor.Graphs.AnimationStateMachine.StateNode
     - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
@@ -66,6 +68,8 @@ ScriptsOnlyBuild:
     - UnityEngine.UI.Scrollbar
     - UnityEngine.UI.Slider
     - UnityEngine.UI.Text
+    com.unity.multiplayer-hlapi.Runtime.dll:
+    - UnityEngine.Networking.NetworkCallbacks
   sceneClasses:
     Assets/Scenes/Select.unity:
     - Class: 1
@@ -819,7 +823,7 @@ ScriptsOnlyBuild:
     className: DOTweenSettings
   - hash:
       serializedVersion: 2
-      Hash: bcce882a1712e50dca3ec83879af5c94
+      Hash: 5dc39aa37c0272aad0b557b096f8830e
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: StageBtnScript
@@ -855,7 +859,7 @@ ScriptsOnlyBuild:
     className: NetworkStartPosition
   - hash:
       serializedVersion: 2
-      Hash: 3b5fb93c9a0eb875a3b74e4362d47f33
+      Hash: eb52e07a9151dd190041b8557c163b5a
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: SelectScript
@@ -1194,4 +1198,4 @@ ScriptsOnlyBuild:
   - Assets/Scenes/StartMain.unity
   - Assets/Scenes/Select.unity
   - Assets/Scenes/Stage.unity
-  playerPath: D:/Unity_Study/DungeonKnight_Build/DungeonKnight.exe
+  playerPath: D:/Unity_Study/Unity_Stud(seowon)/DungeonKnight_Build/DungeonKnight.exe

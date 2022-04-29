@@ -6,19 +6,27 @@ using UnityEngine.UI;
 public class SelectScript : MonoBehaviour
 {
     public static SelectScript Inst = null;
-    GameObject[,] stage_Array = new GameObject[10, 5];
-    GameObject stage_Boss = null;
-    List<GameObject> stage_Old = new List<GameObject>();
+    public GameObject stage_Btn = null;
+    StageBtnScript[,] stage_Array = new StageBtnScript[12, 5];
+    StageBtnScript stage_Boss;
+    List<StageBtnScript> stage_Old = new List<StageBtnScript>();
 
     [Header("----- Map -----")]
     public Canvas canvas = null;
-    public GameObject stage_Obj = null;
-    public GameObject[] scroll_Obj;
-    Vector3 stage_Pos = Vector3.zero;
+    public GameObject content_Root = null;
+    public Transform left_Tr = null;
+    public Transform right_Tr = null;
+    public Transform top_Tr = null;
+    public Transform boss_Tr = null;
 
     [Header("----- UI -----")]
     public GameObject stop_obj = null;
     public FadeScript fadeScript = null;
+
+    void Awake()
+    {
+        Application.targetFrameRate = 60;
+    }
 
     void Start()
     {
@@ -28,49 +36,7 @@ public class SelectScript : MonoBehaviour
         {
             Inst = this;
 
-            for (int ii = 0; ii < stage_Array.GetLength(0); ii++)
-            {
-                for (int kk = 0; kk < stage_Array.GetLength(1); kk++)
-                {
-                    stage_Array[ii, kk] = null;
-                }
-            }
-
-            for (int ii = 0; ii < stage_Array.GetLength(0); ii++)
-            {
-                for (int kk = 0; kk < stage_Array.GetLength(1); kk++)
-                {
-                    GameObject obj = Instantiate(stage_Obj, stage_Pos, Quaternion.identity);
-                    obj.transform.SetParent(scroll_Obj[ii].transform);
-                    obj.transform.localScale = new Vector3(1.3f, 1.3f, 1.3f);
-                    StageBtnScript m_stageBtnScript = obj.GetComponent<StageBtnScript>();
-
-                    if (ii == 0)
-                    {
-                        m_stageBtnScript.stageType = StageType.Monster;
-                    }
-                    else if (ii == 4 || ii == 8)
-                    {
-                        m_stageBtnScript.stageType = StageType.Elite;
-                        obj.GetComponent<StageBtnScript>().stage_Lock = true;
-                    }
-                    else
-                    {
-                        int stage_Ran = Random.Range(0, 4);
-                        m_stageBtnScript.stageType = (StageType)stage_Ran;
-                        obj.GetComponent<StageBtnScript>().stage_Lock = true;
-                    }
-
-                    stage_Array[ii, kk] = obj;
-                }
-            }
-
-            stage_Boss = Instantiate(stage_Obj, stage_Pos, Quaternion.identity);
-            stage_Boss.transform.SetParent(scroll_Obj[scroll_Obj.Length - 1].transform);
-            stage_Boss.transform.localScale = new Vector3(3, 3, 3);
-            StageBtnScript m_bossBtnScript = stage_Boss.GetComponent<StageBtnScript>();
-            m_bossBtnScript.stageType = StageType.Boss;
-            m_bossBtnScript.stage_Lock = true;
+            StageBtnCreate();
 
             DontDestroyOnLoad(canvas);
 
@@ -85,73 +51,201 @@ public class SelectScript : MonoBehaviour
         }
     }
 
-    public void NextStageCheck(GameObject curBtn)
+    void StageBtnCreate()
     {
-        int array_X = 0;
-        int array_Y = 0;
+        for (int ii = 0; ii < stage_Array.GetLength(0); ii++)
+        {
+            Vector3 top_Pos = Vector3.Lerp(left_Tr.position, top_Tr.position, (1.0f / (stage_Array.GetLength(0) - 1)) * ii);
 
-        for (int ii = 0; ii < stage_Array.GetLength(0); ii++) 
             for (int kk = 0; kk < stage_Array.GetLength(1); kk++)
             {
-                ColorChange(stage_Array[ii, kk], Color.gray);
-                StageLock(stage_Array[ii, kk], true);
-                if (stage_Array[ii, kk] == curBtn)
+                int randX = Random.Range(-25, 25);
+                int randY = Random.Range(-25, 25);
+                GameObject obj = Instantiate(stage_Btn);
+                obj.transform.SetParent(content_Root.transform);
+                obj.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                Vector3 lr_pos = Vector3.Lerp(left_Tr.position, right_Tr.position, (1.0f / (stage_Array.GetLength(1) - 1)) * kk);
+                lr_pos.x = lr_pos.x + randX;
+                top_Pos.y = top_Pos.y + randY;
+                obj.transform.position = new Vector3(lr_pos.x, top_Pos.y, 0);
+                stage_Array[ii, kk] = obj.GetComponent<StageBtnScript>();
+
+                if (ii == 0)
                 {
-                    array_X = ii;
-                    array_Y = kk;
+                    stage_Array[ii, kk].stageType = StageType.Monster;
+                }
+                else if (ii == 4 || ii == 8)
+                {
+                    stage_Array[ii, kk].stageType = StageType.Elite;
+                    stage_Array[ii, kk].stage_Lock = true;
+                }
+                else if(ii == 5 || ii == 11)
+                {
+                    stage_Array[ii, kk].stageType = StageType.Camp;
+                    stage_Array[ii, kk].stage_Lock = true;
+                }
+                else
+                {
+                    int stage_Ran = Random.Range(0, 3);
+                    stage_Array[ii, kk].stageType = (StageType)stage_Ran;
+                    stage_Array[ii, kk].stage_Lock = true;
                 }
             }
 
+            if (ii == stage_Array.GetLength(0) - 1)
+            {
+                GameObject obj = Instantiate(stage_Btn);
+                obj.transform.SetParent(content_Root.transform);
+                obj.transform.localScale = new Vector3(3.0f, 3.0f, 3.0f);
+                obj.transform.position = boss_Tr.position;
+                stage_Boss = obj.GetComponent<StageBtnScript>();
+                stage_Boss.on_Check = true;
+                stage_Boss.BtnOnOff(true);
+                stage_Boss.stageType = StageType.Boss;
+                stage_Boss.stage_Lock = true;
+            }
+        }
+
+        List<StageBtnScript> start_List = new List<StageBtnScript>();
+
+        for (int ii = 0; ii < stage_Array.GetLength(1); ii++)
+            start_List.Add(stage_Array[0, ii].GetComponent<StageBtnScript>());
+
+        int start_Rand = Random.Range(3, 5);
+        for (int ii = 0; ii < start_Rand; ii++)
+        {
+            int rand = Random.Range(0, start_List.Count);
+            start_List[rand].on_Check = true;
+            start_List[rand].BtnOnOff(true);
+            start_List.Remove(start_List[rand]);
+        }
+
+        for (int ii = 0; ii < stage_Array.GetLength(0); ii++)
+        {
+            bool cross_Check = false;
+            int on_Count = 0;
+
+            for (int kk = 0; kk < stage_Array.GetLength(1); kk++)
+            {
+                StageBtnScript nowBtn = stage_Array[ii, kk];
+
+                if (nowBtn.on_Check == false)
+                    continue;
+
+                if (ii == stage_Array.GetLength(0) - 1)
+                {
+                    nowBtn.next_BtnList.Add(stage_Boss);
+                    nowBtn.NextLine();
+                    continue;
+                }
+
+                List<StageBtnScript> next_List = new List<StageBtnScript>();
+                if (kk > 0 && kk < stage_Array.GetLength(1) - 1)
+                {
+                    StageBtnScript stageBtn;
+
+                    stageBtn = stage_Array[ii + 1, kk - 1];
+
+                    if (cross_Check == false)
+                        next_List.Add(stageBtn);
+
+                    stageBtn = stage_Array[ii + 1, kk];
+                    next_List.Add(stageBtn);
+
+                    stageBtn = stage_Array[ii + 1, kk + 1];
+                    next_List.Add(stageBtn);
+
+                }
+                else if (kk <= 0)
+                {
+                    StageBtnScript stageBtn;
+
+                    stageBtn = stage_Array[ii + 1, kk];
+                    next_List.Add(stageBtn);
+
+                    stageBtn = stage_Array[ii + 1, kk + 1];
+                    next_List.Add(stageBtn);
+                }
+                else if (kk >= stage_Array.GetLength(1) - 1)
+                {
+                    StageBtnScript stageBtn;
+
+                    stageBtn = stage_Array[ii + 1, kk - 1];
+
+                    if (cross_Check == false)
+                        next_List.Add(stageBtn);
+
+                    stageBtn = stage_Array[ii + 1, kk];
+
+                    next_List.Add(stageBtn);
+
+                }
+
+                int min_Rand = 1;
+                int max_Rand = next_List.Count + 1;
+                int rand = 0;
+
+                if (on_Count < kk)
+                    min_Rand += 1;
+
+                if (max_Rand > 3)
+                    max_Rand = 3;
+
+                if (min_Rand > 2)
+                    rand = 2;
+                else
+                    rand = Random.Range(min_Rand, max_Rand);
+
+                for (int nn = 0; nn < rand; nn++)
+                {
+                    if (next_List.Count <= 0)
+                        break;
+
+                    int rand2 = Random.Range(0, next_List.Count);
+                    nowBtn.next_BtnList.Add(next_List[rand2]);
+                    next_List[rand2].on_Check = true;
+                    next_List[rand2].BtnOnOff(true);
+                    next_List.Remove(next_List[rand2]);
+                    on_Count += 1;
+                    if ((ii + 1 < stage_Array.GetLength(0)) && kk + 1 < stage_Array.GetLength(1))
+                    {
+                        if (stage_Array[ii + 1, kk + 1].on_Check == true)
+                            cross_Check = true;
+                        else
+                            cross_Check = false;
+                    }
+                }
+
+                nowBtn.NextLine();
+            }
+        }
+    }
+
+    public void NextStageCheck(StageBtnScript selecBtn)
+    {
+
+        for (int ii = 0; ii < stage_Array.GetLength(0); ii++)
+            for (int kk = 0; kk < stage_Array.GetLength(1); kk++)
+            {
+                stage_Array[ii, kk].stage_Btn.image.color = Color.gray;
+                stage_Array[ii, kk].stage_Lock = true;
+                stage_Array[ii, kk].LineColor(Color.black);
+            }
+
+        selecBtn.LineColor(Color.white);
+
+        foreach (StageBtnScript stageBtn in selecBtn.next_BtnList)
+        {
+            stageBtn.stage_Btn.image.color = Color.white;
+            stageBtn.stage_Lock = false;
+            //stageBtn.LineColor(Color.white);
+        }
+
+        stage_Old.Add(selecBtn);
+
         for (int ii = 0; ii < stage_Old.Count; ii++)
-            ColorChange(stage_Old[ii], Color.red);
-
-        stage_Old.Add(curBtn);
-
-        if ((array_X + 1) < stage_Array.GetLength(0))
         {
-            GameObject nextObj = stage_Array[array_X + 1, array_Y];
-            ColorChange(nextObj, Color.white);
-            StageLock(nextObj, false);
-
-            if ((array_Y - 1) >= 0)
-            {
-                nextObj = stage_Array[array_X + 1, array_Y - 1];
-                ColorChange(nextObj, Color.white);
-                StageLock(nextObj, false);
-            }
-
-            if ((array_Y + 1) < stage_Array.GetLength(1))
-            {
-                nextObj = stage_Array[array_X + 1, array_Y + 1];
-                ColorChange(nextObj, Color.white);
-                StageLock(nextObj, false);
-            }
-        }
-        else if((array_X + 1) == stage_Array.GetLength(0))
-        {
-            GameObject nextObj = stage_Boss;
-            ColorChange(nextObj, Color.white);
-            StageLock(nextObj, false);
-        }
-    }
-
-    void ColorChange(GameObject obj, Color color)
-    {
-        StageBtnScript a_stageBtnScript = obj.GetComponent<StageBtnScript>();
-
-        if(a_stageBtnScript != null)
-        {
-            a_stageBtnScript.stage_Btn.image.color = color;
-        }
-    }
-
-    void StageLock(GameObject obj, bool Lock)
-    {
-        StageBtnScript a_stageBtnScript = obj.GetComponent<StageBtnScript>();
-
-        if (a_stageBtnScript != null)
-        {
-            a_stageBtnScript.stage_Lock = Lock;
+            stage_Old[ii].stage_Btn.image.color = Color.green;
         }
     }
 }

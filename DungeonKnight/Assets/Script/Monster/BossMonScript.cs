@@ -133,6 +133,9 @@ public class BossMonScript : MonsterClass, IDrain, IDefence, IMultiAtt, IADUp, I
         float drain_Float = a_Damage - HeroScript.Inst.def_Save;
         HeroScript.Inst.Damage(a_Damage);
 
+        if (drain_Float <= 0)
+            drain_Float = 0.0f;
+
         yield return new WaitForSeconds(time * 0.175f);
 
         now_Hp = now_Hp + drain_Float;
@@ -217,10 +220,9 @@ public class BossMonScript : MonsterClass, IDrain, IDefence, IMultiAtt, IADUp, I
 
         for (summon_Count = 0; summon_Count < 2; summon_Count++)
         {
-            GameObject obj = Instantiate(summon_Prefab);
+            GameObject obj = InstantiateFunc(StageScript.Inst.enemy_Root.transform, summon_Prefab);
             float posX = (GlobalScript.g_Width * (-0.5f + (0.4f * summon_Count))) + (GlobalScript.g_Width);
             obj.transform.position = new Vector3(posX, GlobalScript.g_Height * 0.6f, 0);
-            obj.transform.SetParent(StageScript.Inst.enemy_Root.transform);
             obj.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
             StageScript.Inst.enemy_List.Add(obj);
             summon_Obj[summon_Count] = obj;
@@ -377,7 +379,7 @@ public class BossMonScript : MonsterClass, IDrain, IDefence, IMultiAtt, IADUp, I
             SoundScript.Inst.SfSoundPlay("Guard");     // 사운드 재생
         }
 
-        if (now_Hp <= 0)
+        if (now_Hp <= 0 && target_Btn != null)
         {
             target_Btn.gameObject.SetActive(false);
             target_Btn = null;
@@ -428,7 +430,7 @@ public class BossMonScript : MonsterClass, IDrain, IDefence, IMultiAtt, IADUp, I
             if (obj != null)
             {
                 MonsterClass monsterClass = obj.GetComponent<MonsterClass>();
-                if (monsterClass.monState != MonState.Damage && monsterClass.monState != MonState.Death)
+                if (monsterClass.monState != MonState.Death)
                     obj.GetComponent<IDamage>().Damage(999);
             }
         }

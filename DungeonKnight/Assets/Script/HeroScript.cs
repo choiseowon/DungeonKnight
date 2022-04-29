@@ -29,10 +29,6 @@ public class HeroScript : CharactorClass, IAttack, IDefence, IAllAttack, IMultiA
     void Awake()
     {
         Inst = this;
-    }
-
-    void Start()
-    {
         att_Point = GlobalScript.g_AttState;    // static으로 저장된 변수 값을 받아옴
         def_Point = GlobalScript.g_DefState;
         def_Save = 0;
@@ -49,10 +45,12 @@ public class HeroScript : CharactorClass, IAttack, IDefence, IAllAttack, IMultiA
         patt_Bool = false;
     }
 
+    void Start()
+    {
+    }
+
     void FixedUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.Z))
-            PattAdd("AllAttack");
     }
 
     public void PattAdd(string patt_Str)    // 패턴 추가 함수
@@ -85,7 +83,7 @@ public class HeroScript : CharactorClass, IAttack, IDefence, IAllAttack, IMultiA
 
     IEnumerator PattDelayCo()   // 패턴의 딜레이 시간을 주기 위한 코루틴
     {
-        yield return new WaitForSeconds(1.0f);  // 1초 대기
+        yield return new WaitForSeconds(0.5f);  // 1초 대기
 
         pattDelay_Co = null;    // 저장한 코루틴 제거
         TurnEnd();      // 턴 종료 함수 호출

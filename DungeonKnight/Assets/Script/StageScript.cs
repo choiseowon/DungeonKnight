@@ -76,9 +76,14 @@ public class StageScript : MonoBehaviour
     public Button event_Btn = null;
     public GameObject boss_BGImg = null;
 
-    void Start()
+    void Awake()
     {
         Inst = this;
+        Application.targetFrameRate = 60;
+    }
+
+    void Start()
+    {
         enemy_Level = GlobalScript.g_EnemyLev;
         stageType = GlobalScript.g_StageType;
         if (turn_Btn != null)

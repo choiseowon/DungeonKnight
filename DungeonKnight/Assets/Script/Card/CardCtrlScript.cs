@@ -68,6 +68,7 @@ public class CardCtrlScript : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(1) && click_Card != null)      // 선택 중인 카드가 있을 경우 마우스 오른쪽 클릭 시 발생
         {
+            Debug.Log("input");
             ClickCancel(click_Card);        // 선택 중인 카드 취소 함수 호출
         }
     }
@@ -207,6 +208,8 @@ public class CardCtrlScript : MonoBehaviour
         if (max_Index == true)
             draw_Index = 5 - card_List.Count;
 
+        foreach (GameObject card in card_List)
+            card.GetComponent<CardClass>().card_SelecImg.gameObject.SetActive(false);
         draw_Bool = true;
         StartCoroutine(DrawCo(draw_Index, turn_Btn));
     }

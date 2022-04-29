@@ -21,6 +21,11 @@ public class StartMainScript : MonoBehaviour
     public Button yes_Btn = null;
     public Button no_Btn = null;
 
+    void Awake()
+    {
+        Application.targetFrameRate = 60;
+    }
+
     void Start()
     {
         if(GlobalScript.g_SelecCanvas != null)
